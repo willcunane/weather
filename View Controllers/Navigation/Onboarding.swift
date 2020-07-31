@@ -11,17 +11,59 @@ import UIKit
 import SnapKit
 import CoreLocation
 
+var currentLong: Double?
+var currentLat: Double?
+
 class OnboardingController : UIViewController, CLLocationManagerDelegate {
 	
 	let locationManager = CLLocationManager()
 	
+	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+			currentLong = locations.last?.coordinate.longitude
+			currentLat = locations.last?.coordinate.latitude
+			print("locations = \(currentLong!) \(currentLat!)")
+	}
+	
+	func isLocationServiceEnabled() -> Bool {
+			if CLLocationManager.locationServicesEnabled() {
+					switch(CLLocationManager.authorizationStatus()) {
+					case .notDetermined, .restricted, .denied:
+							return false
+					case .authorizedAlways, .authorizedWhenInUse:
+							return true
+					default:
+							print("Something wrong with Location services")
+							return false
+					}
+			} else {
+					print("Location services are not enabled")
+					return false
+			}
+	}
+	
 	override func viewDidLoad(){
 		super.viewDidLoad()
 		createLayout()
+		locationManager.delegate = self
+		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+		locationManager.startUpdatingLocation()
+		// Ask for Authorisation from the User.
+		isLocationServiceEnabled()
+	}
+	
+	override func viewWillLayoutSubviews() {
+		super.viewWillLayoutSubviews()
+		if isLocationServiceEnabled() == true {
+				locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+				locationManager.startUpdatingLocation()
+			let vc = CustomTabBarController()
+			vc.modalPresentationStyle = .overFullScreen
+			self.present(vc, animated: true, completion: nil)
+		}
 	}
 	
 	@objc func allowTapped() {
-		print("Tapped")
+		self.locationManager.requestWhenInUseAuthorization()
 	}
 	
 	private let displayImage : UIImageView = {
