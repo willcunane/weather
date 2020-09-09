@@ -34,24 +34,24 @@ struct Astronomy: Codable {
 }
 
 struct Atmosphere: Codable {
-	let humidity, visibility: Int
+	let humidity, visibility: Double
 	let pressure: Double
 }
 
 struct Condition: Codable {
 	let text: String
-	let code, temperature: Int
+	let code, temperature: Double
 }
 
 struct Wind: Codable {
-	let chill, direction: Int
+	let chill, direction: Double
 	let speed: Double
 }
 
 // MARK: - Forecast
 struct Forecast: Codable {
 	let day: String
-	let date, low, high: Int
+	let date, low, high: Double
 	let text: String
 	let code: Int
 }

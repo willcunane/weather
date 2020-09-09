@@ -23,5 +23,4 @@ class CustomTabBarController: UITabBarController {
 		vc2.tabBarItem.image = #imageLiteral(resourceName: "6361865_preview")
 	}
 
-
 }

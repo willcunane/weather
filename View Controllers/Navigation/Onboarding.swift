@@ -11,17 +11,22 @@ import UIKit
 import SnapKit
 import CoreLocation
 
-var currentLong: Double?
-var currentLat: Double?
-
 class OnboardingController : UIViewController, CLLocationManagerDelegate {
 	
+	var currentLocation: CLLocation?
 	let locationManager = CLLocationManager()
 	
+	func setupLocation() {
+		locationManager.delegate = self
+		locationManager.requestWhenInUseAuthorization()
+		locationManager.startUpdatingLocation()
+	}
+	
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-			currentLong = locations.last?.coordinate.longitude
-			currentLat = locations.last?.coordinate.latitude
-			print("locations = \(currentLong!) \(currentLat!)")
+		if locations.isEmpty, currentLocation == nil {
+			currentLocation = locations.first
+			locationManager.stopUpdatingLocation()
+		}
 	}
 	
 	func isLocationServiceEnabled() -> Bool {
@@ -44,11 +49,7 @@ class OnboardingController : UIViewController, CLLocationManagerDelegate {
 	override func viewDidLoad(){
 		super.viewDidLoad()
 		createLayout()
-		locationManager.delegate = self
-		locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-		locationManager.startUpdatingLocation()
-		// Ask for Authorisation from the User.
-		isLocationServiceEnabled()
+		setupLocation()
 	}
 	
 	override func viewWillLayoutSubviews() {
@@ -60,10 +61,6 @@ class OnboardingController : UIViewController, CLLocationManagerDelegate {
 			vc.modalPresentationStyle = .overFullScreen
 			self.present(vc, animated: true, completion: nil)
 		}
-	}
-	
-	@objc func allowTapped() {
-		self.locationManager.requestWhenInUseAuthorization()
 	}
 	
 	private let displayImage : UIImageView = {
@@ -84,21 +81,10 @@ class OnboardingController : UIViewController, CLLocationManagerDelegate {
 		return label
 	}()
 	
-	private let allowButton : UIButton = {
-		let button = UIButton(type: .system)
-		button.setTitle("Allow", for: .normal)
-		button.backgroundColor = .systemYellow
-		button.addTarget(self, action: #selector(allowTapped), for: .touchUpInside)
-		button.titleLabel?.font = .boldSystemFont(ofSize: 22)
-		button.layer.cornerRadius = 10
-		return button
-	}()
-	
 	func createLayout() {
 		view.backgroundColor = .white
 		view.addSubview(displayText)
 		view.addSubview(displayImage)
-		view.addSubview(allowButton)
 		
 		displayImage.snp.makeConstraints { (make) in
 			make.width.equalTo(300)
@@ -108,17 +94,10 @@ class OnboardingController : UIViewController, CLLocationManagerDelegate {
 		}
 		
 		displayText.snp.makeConstraints { (make) in
-			make.width.equalTo(400)
+			make.width.equalTo(300)
 			make.height.equalTo(200)
 			make.centerX.equalTo(view.snp.centerX)
 			make.top.equalTo(displayImage.snp.bottom).offset(50)
-		}
-		
-		allowButton.snp.makeConstraints { (make) in
-			make.width.equalTo(250)
-			make.height.equalTo(60)
-			make.top.equalTo(displayText.snp.bottom).offset(30)
-			make.centerX.equalTo(view.snp.centerX)
 		}
 	}
 }
