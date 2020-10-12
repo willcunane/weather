@@ -10,7 +10,9 @@ import Foundation
 import SnapKit
 import CoreLocation
 
-class WeeklyWeatherController: UIViewController, CLLocationManagerDelegate {
+class WeeklyWeatherController: UIViewController, CLLocationManagerDelegate, UICollectionViewDataSource, UICollectionViewDelegate {
+	
+	weak var collectionView: UICollectionView!
 	
 	let locationManager = CLLocationManager()
 	var currentLocation : CLLocation?
@@ -31,8 +33,13 @@ class WeeklyWeatherController: UIViewController, CLLocationManagerDelegate {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		// Do any additional setup after loading the view.
+		self.collectionView.dataSource = self
+		self.collectionView.delegate = self
+		self.collectionView.register(ForecastCell.self, forCellWithReuseIdentifier: ForecastCell.reuseId)
+		self.collectionView.alwaysBounceVertical = true
+		self.collectionView.backgroundColor = .red
 		view.backgroundColor = .systemBlue
+		configureViewLayout()
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
@@ -74,26 +81,49 @@ class WeeklyWeatherController: UIViewController, CLLocationManagerDelegate {
 	}
 	
 	func configureViewLayout(){
-		
+		collectionView.snp.makeConstraints { (make) in
+			make.width.equalTo(view.snp.width)
+			make.height.equalTo(view.snp.height)
+		}
 	}
 
 
 }
 
 class ForecastCell: UICollectionViewCell {
-	
+
 	weak var temperatureLabel: UILabel!
 	weak var highLowLabel: UILabel!
 	weak var dayLabel: UILabel!
 	weak var weatherIcon: UIImageView!
-	
+
 	public static var reuseId : String = "forecastCell"
+
+	override init(frame: CGRect) {
+		super.init(frame: frame)
+
+		let temperatureLabel = UILabel(frame: .zero)
+		temperatureLabel.snp.makeConstraints { (make) in
+			make.centerX.equalTo(temperatureLabel.snp.centerX)
+			make.centerY.equalTo(temperatureLabel.snp.centerY)
+		}
+		self.temperatureLabel = temperatureLabel
+		self.reset()
+	}
+
+	required init?(coder: NSCoder) {
+		fatalError("init(coder:) has not been implemented")
+	}
+
+	func reset() {
+			self.temperatureLabel.textAlignment = .center
+	}
 }
 
 class BlankCell: UICollectionViewCell {
-	
+
 	weak var titleLabel: UILabel!
-	
+
 	public static var reuseId: String = "forecastCell"
 }
 

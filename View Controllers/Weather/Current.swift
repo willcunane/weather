@@ -18,7 +18,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		// Do any additional setup after loading the view.
+		createSwipeDirections()
 		view.backgroundColor = .systemBlue
 	}
 	
@@ -65,7 +65,6 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 					sunrise: entries.currentObservation.astronomy.sunrise,
 					sunset: entries.currentObservation.astronomy.sunset
 				)
-				print(entries.currentObservation.condition.code)
 				self.updateIconImage(weatherCode: entries.currentObservation.condition.code)
 				self.removeLoading()
 			} catch {
@@ -83,13 +82,14 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		currentTemperatureLabel.text = "\(Int(temperature!))°"
 		windSpeedLabel.text = "Wind Speed: \(Int(wind!)) mph"
 		humidityLabel.text = "Humidity: \(Int(humidity!))%"
-		sunriseLabel.text = "☀️ \(sunrise!) 🌕 \(sunset!)"
+		sunriseLabel.text = "\(sunrise!)"
+		sunsetLabel.text = "\(sunset!)"
 		removeLoading()
 	}
 	
 	func updateIconImage(weatherCode: Double?){
 		let code = Int(weatherCode!)
-		// should this be a switch statement?
+		// could this be a switch statement?
 		print(code)
 		if rainArray.contains(code){
 			currentWeatherImage.image = #imageLiteral(resourceName: "rain")
@@ -104,6 +104,28 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		} else {
 			currentWeatherImage.image = #imageLiteral(resourceName: "cloudy")
 		}
+	}
+	
+	func createSwipeDirections(){
+		let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(self.respondToSwipeGesture))
+		swipeRight.direction = UISwipeGestureRecognizer.Direction.right
+    self.view.addGestureRecognizer(swipeRight)
+		
+		let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(self.respondToSwipeGesture))
+		swipeRight.direction = UISwipeGestureRecognizer.Direction.left
+    self.view.addGestureRecognizer(swipeLeft)
+	}
+	
+	@objc func respondToSwipeGesture(gesture: UIGestureRecognizer) {
+			if let swipeGesture = gesture as? UISwipeGestureRecognizer {
+					switch swipeGesture.direction {
+					case UISwipeGestureRecognizer.Direction.left:
+						pageCounter.currentPage = 1
+						presentToRight(vc: WeeklyWeatherController())
+					default:
+							break
+					}
+			}
 	}
 	
 	// Create view
@@ -125,6 +147,18 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 	
 	private let currentWeatherImage : UIImageView = {
 		let imageView = UIImageView()
+		return imageView
+	}()
+	
+	private let sunriseIconImage : UIImageView = {
+		let imageView = UIImageView()
+		imageView.image = #imageLiteral(resourceName: "sunrise_icon")
+		return imageView
+	}()
+	
+	private let sunsetIconImage : UIImageView = {
+		let imageView = UIImageView()
+		imageView.image = #imageLiteral(resourceName: "sunset_icon")
 		return imageView
 	}()
 	
@@ -155,10 +189,42 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 	
 	private let sunriseLabel : UILabel = {
 		let label = UILabel()
-		label.textAlignment = .left
-		label.font = .systemFont(ofSize: 26, weight: .bold)
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 22, weight: .bold)
 		label.textColor = .white
 		return label
+	}()
+	private let sunsetLabel : UILabel = {
+		let label = UILabel()
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 22, weight: .bold)
+		label.textColor = .white
+		return label
+	}()
+	
+	private let sunriseHeader : UILabel = {
+		let label = UILabel()
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 20, weight: .regular)
+		label.textColor = .white
+		label.text = "Sunrise"
+		return label
+	}()
+	
+	private let sunsetHeader : UILabel = {
+		let label = UILabel()
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 20, weight: .regular)
+		label.textColor = .white
+		label.text = "Sunset"
+		return label
+	}()
+	
+	private let pageCounter : UIPageControl = {
+		let counter = UIPageControl()
+		counter.numberOfPages = 2
+		counter.currentPage = 0
+		return counter
 	}()
 	
 	func configureViewComponents() {
@@ -169,6 +235,12 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		view.addSubview(locationLabel)
 		view.addSubview(summaryLabel)
 		view.addSubview(sunriseLabel)
+		view.addSubview(sunriseHeader)
+		view.addSubview(sunsetHeader)
+		view.addSubview(sunsetLabel)
+		view.addSubview(sunriseIconImage)
+		view.addSubview(sunsetIconImage)
+		view.addSubview(pageCounter)
 	}
 	
 	// Create constraints for the view
@@ -180,15 +252,15 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			make.centerX.equalTo(view.snp.centerX)
 		}
 		summaryLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(400)
+			make.width.equalTo(100)
 			make.height.equalTo(50)
-			make.top.equalTo(locationLabel.snp.bottom)
 			make.centerX.equalTo(view.snp.centerX)
+			make.bottom.equalTo(currentTemperatureLabel.snp.top).offset(5)
 		}
 		currentWeatherImage.snp.makeConstraints { (make) in
-			make.width.equalTo(150)
-			make.height.equalTo(150)
-			make.top.equalTo(summaryLabel.snp.bottom).offset(30)
+			make.width.equalTo(300)
+			make.height.equalTo(300)
+			make.top.equalTo(locationLabel.snp.bottom)
 			make.centerX.equalTo(view.snp.centerX)
 		}
 		currentTemperatureLabel.snp.makeConstraints { (make) in
@@ -197,23 +269,47 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			make.top.equalTo(currentWeatherImage.snp.bottom).offset(10)
 			make.centerX.equalTo(view.snp.centerX)
 		}
-		windSpeedLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(400)
-			make.height.equalTo(50)
+		sunriseHeader.snp.makeConstraints { (make) in
+			make.width.equalTo(80)
+			make.height.equalTo(20)
 			make.leading.equalTo(view.snp.leading).offset(20)
-			make.top.equalTo(currentTemperatureLabel.snp.bottom).offset(10)
+			make.bottom.equalTo(view.snp.bottomMargin).offset(-10)
 		}
-		humidityLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(400)
-			make.height.equalTo(50)
-			make.leading.equalTo(windSpeedLabel.snp.leading)
-			make.top.equalTo(windSpeedLabel.snp.bottom)
+		sunsetHeader.snp.makeConstraints { (make) in
+			make.width.equalTo(80)
+			make.height.equalTo(20)
+			make.trailing.equalTo(view.snp.trailing).offset(-20)
+			make.bottom.equalTo(view.snp.bottomMargin).offset(-10)
 		}
 		sunriseLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(400)
+			make.width.equalTo(100)
+			make.height.equalTo(30)
+			make.bottom.equalTo(sunriseHeader.snp.top)
+			make.centerX.equalTo(sunriseHeader.snp.centerX)
+		}
+		sunsetLabel.snp.makeConstraints { (make) in
+			make.width.equalTo(100)
+			make.height.equalTo(30)
+			make.bottom.equalTo(sunsetHeader.snp.top)
+			make.centerX.equalTo(sunsetHeader.snp.centerX)
+		}
+		sunsetIconImage.snp.makeConstraints { (make) in
+			make.width.equalTo(50)
 			make.height.equalTo(50)
-			make.leading.equalTo(windSpeedLabel.snp.leading)
-			make.top.equalTo(humidityLabel.snp.bottom)
+			make.bottom.equalTo(sunsetLabel.snp.top)
+			make.centerX.equalTo(sunsetLabel.snp.centerX)
+		}
+		sunriseIconImage.snp.makeConstraints { (make) in
+			make.width.equalTo(50)
+			make.height.equalTo(50)
+			make.bottom.equalTo(sunriseLabel.snp.top)
+			make.centerX.equalTo(sunriseLabel.snp.centerX)
+		}
+		pageCounter.snp.makeConstraints { (make) in
+			make.width.equalTo(50)
+			make.height.equalTo(15)
+			make.centerX.equalTo(view.snp.centerX)
+			make.bottom.equalTo(sunriseLabel.snp.top)
 		}
 	}
 

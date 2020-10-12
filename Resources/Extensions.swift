@@ -45,4 +45,28 @@ public extension UIViewController{
             }
         }
     }
+	
+	func presentToRight(vc: UIViewController){
+		let vc = vc
+		vc.modalPresentationStyle = .fullScreen
+		let transition = CATransition()
+		transition.duration = 0.5
+		transition.type = CATransitionType.push
+		transition.subtype = CATransitionSubtype.fromRight
+		transition.timingFunction = CAMediaTimingFunction(name:CAMediaTimingFunctionName.easeInEaseOut)
+		view.window!.layer.add(transition, forKey: kCATransition)
+		present(vc, animated: false, completion: nil)
+	}
+	
+	func presentToLeft(vc: UIViewController){
+		let vc = vc
+		vc.modalPresentationStyle = .fullScreen
+		let transition = CATransition()
+		transition.duration = 0.5
+		transition.type = CATransitionType.push
+		transition.subtype = CATransitionSubtype.fromLeft
+		transition.timingFunction = CAMediaTimingFunction(name:CAMediaTimingFunctionName.easeInEaseOut)
+		view.window!.layer.add(transition, forKey: kCATransition)
+		present(vc, animated: false, completion: nil)
+	}
 }
