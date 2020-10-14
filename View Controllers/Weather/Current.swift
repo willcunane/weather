@@ -121,7 +121,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 					switch swipeGesture.direction {
 					case UISwipeGestureRecognizer.Direction.left:
 						pageCounter.currentPage = 1
-						presentToRight(vc: WeeklyWeatherController())
+						presentToRight(vc: ViewController())
 					default:
 							break
 					}
@@ -252,7 +252,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			make.centerX.equalTo(view.snp.centerX)
 		}
 		summaryLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(100)
+			make.width.equalTo(200)
 			make.height.equalTo(50)
 			make.centerX.equalTo(view.snp.centerX)
 			make.bottom.equalTo(currentTemperatureLabel.snp.top).offset(5)
