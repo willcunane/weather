@@ -46,7 +46,6 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		guard let currentLocation = currentLocation else {return}
 		let lat = currentLocation.coordinate.latitude
 		let long = currentLocation.coordinate.longitude
-		print("Longitude:\(long), Latitude:\(lat)")
 		YahooWeatherAPI.shared.weather(lat: "\(lat)", lon: "\(long)", failure: { (error) in
 			print(error.localizedDescription)
 		}, success: { (response) in
@@ -65,7 +64,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 					sunrise: entries.currentObservation.astronomy.sunrise,
 					sunset: entries.currentObservation.astronomy.sunset
 				)
-				self.updateIconImage(weatherCode: entries.currentObservation.condition.code)
+				self.updateIconImage(weatherCode: entries.currentObservation.condition.code, imageView: self.currentWeatherImage)
 				self.removeLoading()
 			} catch {
 				print(error)
@@ -87,25 +86,6 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		removeLoading()
 	}
 	
-	func updateIconImage(weatherCode: Double?){
-		let code = Int(weatherCode!)
-		// could this be a switch statement?
-		print(code)
-		if rainArray.contains(code){
-			currentWeatherImage.image = #imageLiteral(resourceName: "rain")
-		} else if cloudyArray.contains(code){
-			currentWeatherImage.image = #imageLiteral(resourceName: "cloudy")
-		} else if snowArray.contains(code){
-			currentWeatherImage.image = #imageLiteral(resourceName: "snow")
-		} else if sunnyArray.contains(code){
-			currentWeatherImage.image = #imageLiteral(resourceName: "sunny")
-		} else if stormArray.contains(code){
-			currentWeatherImage.image = #imageLiteral(resourceName: "storm")
-		} else {
-			currentWeatherImage.image = #imageLiteral(resourceName: "cloudy")
-		}
-	}
-	
 	func createSwipeDirections(){
 		let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(self.respondToSwipeGesture))
 		swipeRight.direction = UISwipeGestureRecognizer.Direction.right
@@ -121,7 +101,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 					switch swipeGesture.direction {
 					case UISwipeGestureRecognizer.Direction.left:
 						pageCounter.currentPage = 1
-						presentToRight(vc: ViewController())
+						presentToRight(vc: WeeklyWeatherController())
 					default:
 							break
 					}
@@ -258,8 +238,8 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			make.bottom.equalTo(currentTemperatureLabel.snp.top).offset(5)
 		}
 		currentWeatherImage.snp.makeConstraints { (make) in
-			make.width.equalTo(300)
-			make.height.equalTo(300)
+			make.width.equalTo(250)
+			make.height.equalTo(250)
 			make.top.equalTo(locationLabel.snp.bottom)
 			make.centerX.equalTo(view.snp.centerX)
 		}
@@ -309,7 +289,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			make.width.equalTo(50)
 			make.height.equalTo(15)
 			make.centerX.equalTo(view.snp.centerX)
-			make.bottom.equalTo(sunriseLabel.snp.top)
+			make.bottom.equalTo(view.snp.bottom).offset(-40)
 		}
 	}
 

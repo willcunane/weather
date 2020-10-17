@@ -69,4 +69,22 @@ public extension UIViewController{
 		view.window!.layer.add(transition, forKey: kCATransition)
 		present(vc, animated: false, completion: nil)
 	}
+	
+	func updateIconImage(weatherCode: Double?, imageView: UIImageView){
+		let code = Int(weatherCode!)
+		// could this be a switch statement?
+		if rainArray.contains(code){
+			imageView.image = #imageLiteral(resourceName: "rain")
+		} else if cloudyArray.contains(code){
+			imageView.image = #imageLiteral(resourceName: "cloudy")
+		} else if snowArray.contains(code){
+			imageView.image = #imageLiteral(resourceName: "snow")
+		} else if sunnyArray.contains(code){
+			imageView.image = #imageLiteral(resourceName: "sunny")
+		} else if stormArray.contains(code){
+			imageView.image = #imageLiteral(resourceName: "storm")
+		} else {
+			imageView.image = #imageLiteral(resourceName: "cloudy")
+		}
+	}
 }
