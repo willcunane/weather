@@ -12,13 +12,34 @@ import CoreLocation
 
 class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 	
+	weak var collectionView: UICollectionView!
+	
 	let locationManager = CLLocationManager()	
 	var currentLocation : CLLocation?
 	var Forecast : [Forecast] = []
-
+	
+	override func loadView() {
+		super.loadView()
+		
+		let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+		self.view.addSubview(collectionView)
+		
+		collectionView.snp.makeConstraints { (make) in
+			make.top.equalTo(view.snp.top).offset(400)
+			make.bottom.equalTo(view.snp.bottom).offset(-160)
+			make.trailing.equalTo(view.snp.trailing)
+			make.leading.equalTo(view.snp.leading)
+		}
+		self.collectionView = collectionView
+	}
+	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		createSwipeDirections()
+		self.collectionView.dataSource = self
+		self.collectionView.delegate = self
+		self.collectionView.register(Cell.self, forCellWithReuseIdentifier: Cell.identifier)
+		self.collectionView.alwaysBounceVertical = true
+		self.collectionView.backgroundColor = .systemBlue
 		view.backgroundColor = .systemBlue
 	}
 	
@@ -41,7 +62,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		locationManager.requestWhenInUseAuthorization()
 		locationManager.startUpdatingLocation()
 	}
-
+	
 	func getWeatherForLocation() {
 		guard let currentLocation = currentLocation else {return}
 		let lat = currentLocation.coordinate.latitude
@@ -65,6 +86,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 					sunset: entries.currentObservation.astronomy.sunset
 				)
 				self.updateIconImage(weatherCode: entries.currentObservation.condition.code, imageView: self.currentWeatherImage)
+				self.collectionView.reloadData()
 				self.removeLoading()
 			} catch {
 				print(error)
@@ -84,28 +106,6 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		sunriseLabel.text = "\(sunrise!)"
 		sunsetLabel.text = "\(sunset!)"
 		removeLoading()
-	}
-	
-	func createSwipeDirections(){
-		let swipeRight = UISwipeGestureRecognizer(target: self, action: #selector(self.respondToSwipeGesture))
-		swipeRight.direction = UISwipeGestureRecognizer.Direction.right
-    self.view.addGestureRecognizer(swipeRight)
-		
-		let swipeLeft = UISwipeGestureRecognizer(target: self, action: #selector(self.respondToSwipeGesture))
-		swipeRight.direction = UISwipeGestureRecognizer.Direction.left
-    self.view.addGestureRecognizer(swipeLeft)
-	}
-	
-	@objc func respondToSwipeGesture(gesture: UIGestureRecognizer) {
-			if let swipeGesture = gesture as? UISwipeGestureRecognizer {
-					switch swipeGesture.direction {
-					case UISwipeGestureRecognizer.Direction.left:
-						pageCounter.currentPage = 1
-						presentToRight(vc: WeeklyWeatherController())
-					default:
-							break
-					}
-			}
 	}
 	
 	// Create view
@@ -200,13 +200,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		return label
 	}()
 	
-	private let pageCounter : UIPageControl = {
-		let counter = UIPageControl()
-		counter.numberOfPages = 2
-		counter.currentPage = 0
-		return counter
-	}()
-	
+	// Add view components
 	func configureViewComponents() {
 		view.addSubview(currentWeatherImage)
 		view.addSubview(currentTemperatureLabel)
@@ -220,7 +214,6 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		view.addSubview(sunsetLabel)
 		view.addSubview(sunriseIconImage)
 		view.addSubview(sunsetIconImage)
-		view.addSubview(pageCounter)
 	}
 	
 	// Create constraints for the view
@@ -233,9 +226,9 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		}
 		summaryLabel.snp.makeConstraints { (make) in
 			make.width.equalTo(200)
-			make.height.equalTo(50)
+			make.height.equalTo(30)
 			make.centerX.equalTo(view.snp.centerX)
-			make.bottom.equalTo(currentTemperatureLabel.snp.top).offset(5)
+			make.bottom.equalTo(currentWeatherImage.snp.bottom)
 		}
 		currentWeatherImage.snp.makeConstraints { (make) in
 			make.width.equalTo(250)
@@ -245,8 +238,8 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		}
 		currentTemperatureLabel.snp.makeConstraints { (make) in
 			make.width.equalTo(120)
-			make.height.equalTo(70)
-			make.top.equalTo(currentWeatherImage.snp.bottom).offset(10)
+			make.height.equalTo(50)
+			make.top.equalTo(currentWeatherImage.snp.bottom)
 			make.centerX.equalTo(view.snp.centerX)
 		}
 		sunriseHeader.snp.makeConstraints { (make) in
@@ -285,12 +278,5 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			make.bottom.equalTo(sunriseLabel.snp.top)
 			make.centerX.equalTo(sunriseLabel.snp.centerX)
 		}
-		pageCounter.snp.makeConstraints { (make) in
-			make.width.equalTo(50)
-			make.height.equalTo(15)
-			make.centerX.equalTo(view.snp.centerX)
-			make.bottom.equalTo(view.snp.bottom).offset(-40)
-		}
 	}
-
 }
