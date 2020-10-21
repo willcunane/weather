@@ -22,16 +22,16 @@ enum YahooWeatherAPIUnitType:String {
 }
 
 fileprivate struct YahooWeatherAPIClientCredentials {
-    var appId = "E72OiT32"
-    var clientId = "dj0yJmk9SWlHdExuMXJMcmRjJmQ9WVdrOVJUY3lUMmxVTXpJbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PThl"
-    var clientSecret = "66cc6108aa75af29366049dc0617b82a387670ea"
+    var appId = privateAppID
+    var clientId = privateClientID
+    var clientSecret = privateClientSecret
 }
 
 class YahooWeatherAPI {
     // Configure the following with your values.
-    private let credentials = YahooWeatherAPIClientCredentials(appId: "E72OiT32", clientId: "dj0yJmk9SWlHdExuMXJMcmRjJmQ9WVdrOVJUY3lUMmxVTXpJbWNHbzlNQS0tJnM9Y29uc3VtZXJzZWNyZXQmc3Y9MCZ4PThl", clientSecret: "66cc6108aa75af29366049dc0617b82a387670ea")
+    private let credentials = YahooWeatherAPIClientCredentials(appId: privateHeader, clientId: privateClientID, clientSecret: privateClientSecret)
     
-    private let url:String = "https://weather-ydn-yql.media.yahoo.com/forecastrss"
+    private let url:String = privateURL
     private let oauth:OAuth1Swift?
     
     public static let shared = YahooWeatherAPI()
@@ -43,7 +43,7 @@ class YahooWeatherAPI {
     
     private var headers:[String:String] {
         return [
-            "E72OiT32": self.credentials.appId
+            privateHeader: self.credentials.appId
         ]
     }
     
