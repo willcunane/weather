@@ -27,10 +27,12 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		collectionView.snp.makeConstraints { (make) in
 			make.top.equalTo(view.snp.top).offset(400)
 			make.bottom.equalTo(view.snp.bottom).offset(-160)
-			make.trailing.equalTo(view.snp.trailing)
-			make.leading.equalTo(view.snp.leading)
+			make.trailing.equalTo(view.snp.trailing).offset(5)
+			make.leading.equalTo(view.snp.leading).offset(-5)
 		}
 		self.collectionView = collectionView
+		collectionView.layer.borderWidth = 1
+		collectionView.layer.borderColor = UIColor.white.cgColor
 	}
 	
 	override func viewDidLoad() {

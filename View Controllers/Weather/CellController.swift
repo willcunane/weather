@@ -39,7 +39,7 @@ extension CurrentWeatherController: UICollectionViewDataSource {
 			day = "Sunday"
 		}
 		cell.textLabel.text = day
-		cell.tempLabel.text = "\(Int(data.low))° | \(Int(data.high))°"
+		cell.tempLabel.text = "\(Int(data.high))° | \(Int(data.low))°"
 		updateIconImage(weatherCode: Double(data.code), imageView: cell.weatherIcon)
 		return cell
 	}
@@ -104,7 +104,7 @@ class Cell: UICollectionViewCell {
 		textLabel.snp.makeConstraints { (make) in
 			make.leading.equalTo(20)
 			make.centerY.equalTo(self.snp.centerY)
-			make.width.equalTo(100)
+			make.width.equalTo(110)
 		}
 		tempLabel.snp.makeConstraints { (make) in
 			make.trailing.equalTo(-20)
@@ -136,7 +136,7 @@ class Cell: UICollectionViewCell {
 		self.textLabel.textAlignment = .left
 		self.tempLabel.textAlignment = .left
 		
-		self.textLabel.font = .systemFont(ofSize: 18, weight: .bold)
+		self.textLabel.font = .systemFont(ofSize: 18, weight: .regular)
 		self.tempLabel.font = .systemFont(ofSize: 18, weight: .bold)
 	}
 }
