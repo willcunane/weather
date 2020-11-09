@@ -17,6 +17,9 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 	let locationManager = CLLocationManager()	
 	var currentLocation : CLLocation?
 	var Forecast : [Forecast] = []
+	private var animateAlert : Bool = true
+	
+	public static let shared = CurrentWeatherController()
 	
 	override func loadView() {
 		super.loadView()
@@ -37,20 +40,47 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		self.collectionView.dataSource = self
-		self.collectionView.delegate = self
-		self.collectionView.register(Cell.self, forCellWithReuseIdentifier: Cell.identifier)
-		self.collectionView.alwaysBounceVertical = true
-		self.collectionView.backgroundColor = .systemBlue
+		configureCollectionView()
+		configureSwipeDirections()
 		view.backgroundColor = .systemBlue
 	}
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		setupLocation()
+		determineLocationPermissions()
 		showLoading()
 	}
 	
+	// Inits collection view
+	private func configureCollectionView() {
+		self.collectionView.dataSource = self
+		self.collectionView.delegate = self
+		self.collectionView.register(Cell.self, forCellWithReuseIdentifier: Cell.identifier)
+		self.collectionView.alwaysBounceVertical = true
+		self.collectionView.backgroundColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
+	}
+	
+	// Inits swipe direction and action
+	 func configureSwipeDirections() {
+		let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(respondToSwipeGesture))
+		swipeDown.direction = .up
+		self.view.addGestureRecognizer(swipeDown)
+	}
+	@objc func respondToSwipeGesture(gesture: UIGestureRecognizer) {
+		if let swipeGesture = gesture as? UISwipeGestureRecognizer {
+			switch swipeGesture.direction {
+			case UISwipeGestureRecognizer.Direction.up:
+				let vc = SearchCityController()
+				vc.modalPresentationStyle = .overFullScreen
+				self.present(vc, animated: true, completion: nil)
+				removeSwipeAlert()
+			default:
+				break
+			}
+		}
+	}
+	
+	// Location listener
 	func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
 		if !locations.isEmpty, currentLocation == nil {
 			currentLocation = locations.first
@@ -59,13 +89,24 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		}
 	}
 	
-	func setupLocation() {
+	private func determineLocationPermissions() {
 		locationManager.delegate = self
-		locationManager.requestWhenInUseAuthorization()
-		locationManager.startUpdatingLocation()
+		if CLLocationManager.locationServicesEnabled() {
+			switch CLLocationManager.authorizationStatus() {
+			case .notDetermined:
+				locationManager.requestWhenInUseAuthorization()
+			case .authorizedWhenInUse:
+				locationManager.startUpdatingLocation()
+			case .restricted:
+				// Best practice would be to present a view controller, since this is a demo app I'm assuming this will not happen
+				print("Location not allowed, please change this in your settings")
+			default:
+				print("Location permissions not determined")
+			}
+		}
 	}
 	
-	func getWeatherForLocation() {
+	private func getWeatherForLocation() {
 		guard let currentLocation = currentLocation else {return}
 		let lat = currentLocation.coordinate.latitude
 		let long = currentLocation.coordinate.longitude
@@ -75,9 +116,12 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			let data = response.data
 			do {
 				let entries = try JSONDecoder().decode(Weather.self, from: data)
-				for x in entries.forecasts {
-					self.Forecast.append(x)
+				for days in entries.forecasts {
+					self.Forecast.append(days)
 				}
+				self.configureViewComponents()
+				self.configureViewLayout()
+				self.animateSwipeAlertOut()
 				self.createViewWithData(
 					location: entries.location.city,
 					summary: entries.currentObservation.condition.text,
@@ -99,6 +143,7 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 	func createViewWithData(location: String?, summary: String?, temperature: Double?, wind: Double?, humidity: Double?, sunrise: String?, sunset: String?) {
 		configureViewComponents()
 		configureViewLayout()
+		animateSwipeAlertOut()
 		
 		locationLabel.text = location
 		summaryLabel.text = summary
@@ -110,7 +155,35 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		removeLoading()
 	}
 	
-	// Create view
+	private func animateSwipeAlertOut() {
+		if animateAlert == true {
+			UIView.animate(withDuration: 3, animations: {
+				self.upArrow.alpha = 0.2
+				self.swipeUpLabel.alpha = 0.2
+			}, completion: {_ in
+				self.animateSwipeAlertIn()
+			})
+		}
+	}
+	
+	private func animateSwipeAlertIn() {
+		if animateAlert == true {
+			UIView.animate(withDuration: 3, animations: {
+				self.upArrow.alpha = 1
+				self.swipeUpLabel.alpha = 1
+			}, completion: {_ in
+				self.animateSwipeAlertOut()
+			})
+		}
+	}
+	
+	private func removeSwipeAlert() {
+		self.upArrow.removeFromSuperview()
+		self.swipeUpLabel.removeFromSuperview()
+		animateAlert = false
+	}
+	
+	// Create view components
 	private let locationLabel : UILabel = {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 30, weight: .medium)
@@ -202,6 +275,24 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		return label
 	}()
 	
+	private let upArrow : UIImageView = {
+		let imageView = UIImageView()
+		imageView.image = UIImage(systemName: "hand.point.up.left")
+		imageView.tintColor = .white
+		return imageView
+	}()
+	
+	private let swipeUpLabel : UILabel = {
+		let label = UILabel()
+		label.text = "Swipe up to search for a city"
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 14, weight: .regular)
+		label.textColor = .white
+		label.numberOfLines = 2
+		
+		return label
+	}()
+	
 	// Add view components
 	func configureViewComponents() {
 		view.addSubview(currentWeatherImage)
@@ -216,6 +307,8 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 		view.addSubview(sunsetLabel)
 		view.addSubview(sunriseIconImage)
 		view.addSubview(sunsetIconImage)
+		view.addSubview(upArrow)
+		view.addSubview(swipeUpLabel)
 	}
 	
 	// Create constraints for the view
@@ -279,6 +372,18 @@ class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
 			make.height.equalTo(50)
 			make.bottom.equalTo(sunriseLabel.snp.top)
 			make.centerX.equalTo(sunriseLabel.snp.centerX)
+		}
+		upArrow.snp.makeConstraints { (make) in
+			make.width.equalTo(50)
+			make.height.equalTo(60)
+			make.centerX.equalTo(view.snp.centerX)
+			make.top.equalTo(collectionView.snp.bottom).offset(10)
+		}
+		swipeUpLabel.snp.makeConstraints { (make) in
+			make.width.equalTo(180)
+			make.height.equalTo(40)
+			make.centerX.equalTo(view.snp.centerX)
+			make.top.equalTo(upArrow.snp.bottom)
 		}
 	}
 }
