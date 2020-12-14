@@ -8,18 +8,14 @@
 
 import Foundation
 import SnapKit
-import CoreLocation
 
-public class CurrentWeatherController: UIViewController, CLLocationManagerDelegate {
+public class CityController: UIViewController {
 	
 	weak var collectionView: UICollectionView!
-	
-	let locationManager = CLLocationManager()	
-	var currentLocation : CLLocation?
+	public static let shared = CityController()
+	public var searchLocation : String?
+
 	var Forecast : [Forecast] = []
-	private var animationLoopCount : Int = 0
-	
-	public static let shared = CurrentWeatherController()
 	
 	public override func loadView() {
 		super.loadView()
@@ -41,13 +37,12 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 	public override func viewDidLoad() {
 		super.viewDidLoad()
 		configureCollectionView()
-		configureSwipeDirections()
 		view.backgroundColor = .systemBlue
 	}
 	
 	public override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		determineLocationPermissions()
+		getWeatherBySearch(Location: searchLocation!)
 		showLoading()
 	}
 	
@@ -60,57 +55,8 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		self.collectionView.backgroundColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
 	}
 	
-	// Inits swipe direction and action
-	func configureSwipeDirections() {
-		let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(respondToSwipeGesture))
-		swipeDown.direction = .up
-		self.view.addGestureRecognizer(swipeDown)
-	}
-	@objc func respondToSwipeGesture(gesture: UIGestureRecognizer) {
-		if let swipeGesture = gesture as? UISwipeGestureRecognizer {
-			switch swipeGesture.direction {
-			case UISwipeGestureRecognizer.Direction.up:
-				let vc = SearchCityController()
-				vc.modalPresentationStyle = .overFullScreen
-				self.present(vc, animated: true, completion: nil)
-				removeSwipeAlert()
-			default:
-				break
-			}
-		}
-	}
-	
-	// Location listener
-	public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
-		if !locations.isEmpty, currentLocation == nil {
-			currentLocation = locations.first
-			locationManager.stopUpdatingLocation()
-			getWeatherByLocation()
-		}
-	}
-	
-	private func determineLocationPermissions() {
-		locationManager.delegate = self
-		if CLLocationManager.locationServicesEnabled() {
-			switch CLLocationManager.authorizationStatus() {
-			case .notDetermined:
-				locationManager.requestWhenInUseAuthorization()
-			case .authorizedWhenInUse:
-				locationManager.startUpdatingLocation()
-			case .restricted:
-				// Best practice would be to present a view controller, since this is a demo app I'm assuming this will not happen
-				print("Location not allowed, please change this in your settings")
-			default:
-				print("Location permissions not determined")
-			}
-		}
-	}
-	
-	private func getWeatherByLocation() {
-		guard let currentLocation = currentLocation else {return}
-		let lat = currentLocation.coordinate.latitude
-		let long = currentLocation.coordinate.longitude
-		YahooWeatherAPI.shared.weather(lat: "\(lat)", lon: "\(long)", failure: { (error) in
+	func getWeatherBySearch(Location : String){
+		YahooWeatherAPI.shared.weather(location: Location, failure: { (error) in
 			print(error.localizedDescription)
 		}, success: { (response) in
 			let data = response.data
@@ -119,33 +65,6 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 				for days in entries.forecasts {
 					self.Forecast.append(days)
 				}
-				self.configureViewComponents()
-				self.configureViewLayout()
-				self.createViewWithData(
-					location: entries.location.city,
-					summary: entries.currentObservation.condition.text,
-					temperature: entries.currentObservation.condition.temperature,
-					wind: entries.currentObservation.wind.speed,
-					humidity: entries.currentObservation.atmosphere.humidity,
-					sunrise: entries.currentObservation.astronomy.sunrise,
-					sunset: entries.currentObservation.astronomy.sunset
-				)
-				self.updateIconImage(weatherCode: entries.currentObservation.condition.code, imageView: self.currentWeatherImage)
-				self.collectionView.reloadData()
-				self.removeLoading()
-			} catch {
-				print(error)
-			}
-		}, responseFormat: .json, unit: .imperial)
-	}
-	
-	func getWeatherBySearch(Location : String){
-		YahooWeatherAPI.shared.weather(location: Location, failure: { (error) in
-			print(error.localizedDescription)
-		}, success: { (response) in
-			let data = response.data
-			do {
-				let entries = try JSONDecoder().decode(Weather.self, from: data)
 				self.createViewWithData(
 					location: entries.location.city,
 					summary: entries.currentObservation.condition.text,
@@ -166,7 +85,6 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 	func createViewWithData(location: String?, summary: String?, temperature: Double?, wind: Double?, humidity: Double?, sunrise: String?, sunset: String?) {
 		configureViewComponents()
 		configureViewLayout()
-		animateSwipeAlertOut()
 		
 		locationLabel.text = location
 		summaryLabel.text = summary
@@ -176,32 +94,6 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		sunriseLabel.text = "\(sunrise!)"
 		sunsetLabel.text = "\(sunset!)"
 		removeLoading()
-	}
-	
-	private func animateSwipeAlertOut() {
-		UIView.animate(withDuration: 2.5, animations: {
-			self.upArrow.alpha = 0
-			self.swipeUpLabel.alpha = 0
-		}, completion: {_ in
-			self.animateSwipeAlertIn()
-		})
-	}
-	
-	private func animateSwipeAlertIn() {
-		if animationLoopCount <= 5 {
-			animationLoopCount += 1
-			UIView.animate(withDuration: 2.5, animations: {
-				self.upArrow.alpha = 1
-				self.swipeUpLabel.alpha = 1
-			}, completion: {_ in
-				self.animateSwipeAlertOut()
-			})
-		}
-	}
-	
-	private func removeSwipeAlert() {
-		self.upArrow.removeFromSuperview()
-		self.swipeUpLabel.removeFromSuperview()
 	}
 	
 	// MARK: - UI Elements
@@ -296,24 +188,6 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		return label
 	}()
 	
-	private let upArrow : UIImageView = {
-		let imageView = UIImageView()
-		imageView.image = UIImage(systemName: "hand.point.up.left")
-		imageView.tintColor = .white
-		return imageView
-	}()
-	
-	private let swipeUpLabel : UILabel = {
-		let label = UILabel()
-		label.text = "Swipe up to search for a city"
-		label.textAlignment = .center
-		label.font = .systemFont(ofSize: 14, weight: .regular)
-		label.textColor = .white
-		label.numberOfLines = 2
-		
-		return label
-	}()
-	
 	// MARK: - Constraints
 	func configureViewComponents() {
 		view.addSubview(currentWeatherImage)
@@ -328,8 +202,6 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		view.addSubview(sunsetLabel)
 		view.addSubview(sunriseIconImage)
 		view.addSubview(sunsetIconImage)
-		view.addSubview(upArrow)
-		view.addSubview(swipeUpLabel)
 	}
 	
 	// Create constraints for the view
@@ -394,17 +266,75 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 			make.bottom.equalTo(sunriseLabel.snp.top)
 			make.centerX.equalTo(sunriseLabel.snp.centerX)
 		}
-		upArrow.snp.makeConstraints { (make) in
-			make.width.equalTo(50)
-			make.height.equalTo(60)
-			make.centerX.equalTo(view.snp.centerX)
-			make.top.equalTo(collectionView.snp.bottom).offset(10)
+	}
+}
+
+extension CityController: UICollectionViewDataSource {
+	
+	public func collectionView(_ collectionView: UICollectionView,
+											numberOfItemsInSection section: Int) -> Int {
+		return Forecast.count
+	}
+	
+	public func collectionView(_ collectionView: UICollectionView,
+											cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+		let cell = collectionView.dequeueReusableCell(withReuseIdentifier: Cell.identifier, for: indexPath) as! Cell
+		let data = self.Forecast[indexPath.item]
+		var day = data.day
+		
+		if day == "Mon" {
+			day = "Monday"
+		} else if day == "Tue" {
+			day = "Tuesday"
+		} else if day == "Wed" {
+			day = "Wednesday"
+		} else if day == "Thu" {
+			day = "Thursday"
+		} else if day == "Fri" {
+			day = "Friday"
+		} else if day == "Sat" {
+			day = "Saturday"
+		} else if day == "Sun" {
+			day = "Sunday"
 		}
-		swipeUpLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(180)
-			make.height.equalTo(40)
-			make.centerX.equalTo(view.snp.centerX)
-			make.top.equalTo(upArrow.snp.bottom)
-		}
+		
+		cell.textLabel.text = day
+		cell.tempLabel.text = "\(Int(data.high))° | \(Int(data.low))°"
+		updateIconImage(weatherCode: Double(data.code), imageView: cell.weatherIcon)
+		return cell
+	}
+}
+
+extension CityController: UICollectionViewDelegate {
+	
+	public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+		
+	}
+}
+
+extension CityController: UICollectionViewDelegateFlowLayout {
+	
+	public func collectionView(_ collectionView: UICollectionView,
+											layout collectionViewLayout: UICollectionViewLayout,
+											sizeForItemAt indexPath: IndexPath) -> CGSize {
+		return CGSize(width: collectionView.bounds.width, height: 70)
+	}
+	
+	public func collectionView(_ collectionView: UICollectionView,
+											layout collectionViewLayout: UICollectionViewLayout,
+											insetForSectionAt section: Int) -> UIEdgeInsets {
+		return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0) //.zero
+	}
+	
+	public func collectionView(_ collectionView: UICollectionView,
+											layout collectionViewLayout: UICollectionViewLayout,
+											minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+		return 0
+	}
+	
+	public func collectionView(_ collectionView: UICollectionView,
+											layout collectionViewLayout: UICollectionViewLayout,
+											minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+		return 0
 	}
 }

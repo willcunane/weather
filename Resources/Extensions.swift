@@ -71,7 +71,7 @@ public extension UIViewController{
 	}
 	
 	func updateIconImage(weatherCode: Double?, imageView: UIImageView){
-		let code = Int(weatherCode!)
+		let code = Int(weatherCode ?? 26)
 		// could this be a switch statement?
 		if rainArray.contains(code){
 			imageView.image = #imageLiteral(resourceName: "rain")

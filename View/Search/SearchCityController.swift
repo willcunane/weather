@@ -11,11 +11,12 @@ import SnapKit
 import CoreLocation
 import NotificationBannerSwift
 
-class SearchCityController: UIViewController {
+public class SearchCityController: UIViewController {
 
 	var Forecast : [Forecast] = []
+	public static let shared = SearchCityController()
 	
-    override func viewDidLoad() {
+	public override func viewDidLoad() {
 			super.viewDidLoad()
 			view.backgroundColor = .clear
 			addBlurredBackground(style: UIBlurEffect.Style.light)
@@ -66,9 +67,16 @@ class SearchCityController: UIViewController {
 	}()
 	
 	@objc func searchButtonTapped() {
-		let location = searchBar.text!
-		print(location)
-		getWeatherForLocation(Location: location)
+		print(searchBar.text)
+		if searchBar.text == Optional("") {
+			let banner = NotificationBanner(title: "Error", subtitle: "Please enter a city and state in the proper format", style: .danger)
+			banner.show()
+		} else {
+			let vc = CityController()
+			vc.searchLocation = searchBar.text!
+			//vc.modal
+			self.present(vc, animated: true, completion: nil)
+		}
   }
 	
 	func addBlurredBackground(style: UIBlurEffect.Style) {
