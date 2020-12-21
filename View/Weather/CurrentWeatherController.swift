@@ -99,6 +99,7 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 				locationManager.startUpdatingLocation()
 			case .restricted:
 				// Best practice would be to present a view controller, since this is a demo app I'm assuming this will not happen
+				self.dismiss(animated: true, completion: nil)
 				print("Location not allowed, please change this in your settings")
 			default:
 				print("Location permissions not determined")

@@ -16,45 +16,32 @@ class OnboardingController: UIViewController, CLLocationManagerDelegate {
 	let locationManager = CLLocationManager()
 	var currentLocation : CLLocation?
 	
-	public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-		if (CLLocationManager.locationServicesEnabled()) {
-			let vc = CurrentWeatherController()
-			vc.modalPresentationStyle = .overFullScreen
-			self.present(vc, animated: true, completion: nil)
+	func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+		if locationManager.authorizationStatus == .authorizedAlways {
+			presentWeatherController()
+		} else if locationManager.authorizationStatus == .authorizedWhenInUse {
+			presentWeatherController()
 		} else {
 			createAlert(title: "Location Permissions Disabled", message: "You have disabled location permissions for this app. You will only be able to search for locations. To fix this please visit your devices privacy settings for this application", style: .alert)
-			let vc = SearchCityController()
-			self.present(vc, animated: true, completion: nil)
 		}
 	}
 	
-	private func determineLocationPermissions() {
-		print(CLLocationManager.authorizationStatus())
-		locationManager.delegate = self
-		if CLLocationManager.locationServicesEnabled() {
-			switch CLLocationManager.authorizationStatus() {
-			case .notDetermined:
-				locationManager.requestWhenInUseAuthorization()
-				print("Location permissions not determined")
-			case .authorizedWhenInUse:
-				print("Location services allowed")
-				let vc = CurrentWeatherController()
-				vc.modalPresentationStyle = .overFullScreen
-				self.present(vc, animated: true, completion: nil)
-			case .restricted:
-				createAlert(title: "Location Permissions Disabled", message: "You have disabled location permissions for this app. You will only be able to search for locations. To fix this please visit your devices privacy settings for this application", style: .alert)
-				let vc = SearchCityController()
-				self.present(vc, animated: true, completion: nil)
-			default:
-				print("Location permissions not determined")
-			}
-		}
+	private func presentWeatherController() {
+			let vc = CurrentWeatherController()
+			vc.modalPresentationStyle = .overFullScreen
+			self.present(vc, animated: true, completion: nil)
 	}
 
 	private func createAlert(title: String, message: String, style: UIAlertController.Style) {
 		let alertController = UIAlertController(title: title, message: message, preferredStyle: style)
 		alertController.addAction(UIAlertAction(title: "I Understand", style: .destructive))
 		self.present(alertController, animated: true, completion: nil)
+	}
+	
+	@objc func searchTapped() {
+		let vc = SearchCityController()
+		vc.modalPresentationStyle = .overFullScreen
+		self.present(vc, animated: true, completion: nil)
 	}
 	
 	private let label : UILabel = {
@@ -67,25 +54,46 @@ class OnboardingController: UIViewController, CLLocationManagerDelegate {
 		return label
 	}()
 	
+	private let searchButton : UIButton = {
+		let button = UIButton(type: .system)
+		button.setTitle("Search", for: .normal)
+		button.titleLabel?.font = .systemFont(ofSize: 22, weight: .regular)
+		button.titleLabel?.textAlignment = .center
+		button.backgroundColor = .white
+		button.titleLabel?.textColor = .systemBlue
+		button.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
+		button.layer.cornerRadius = 10
+		return button
+	}()
+	
 	private func createView() {
 		view.addSubview(label)
+		view.addSubview(searchButton)
 		
 		label.snp.makeConstraints { (make) in
-			make.width.equalTo(view.snp.width)
+			make.width.equalTo(view.snp.width).offset(-20)
 			make.centerX.equalTo(view.snp.centerX)
 			make.top.equalTo(view.snp.topMargin).offset(80)
 		}
+		
+		searchButton.snp.makeConstraints { (make) in
+			make.width.equalTo(120)
+			make.height.equalTo(40)
+			make.centerX.equalTo(view.snp.centerX)
+			make.top.equalTo(label.snp.bottom).offset(100)
+		}
 	}
     override func viewDidLoad() {
-        super.viewDidLoad()
-				view.backgroundColor = .systemBlue
+			super.viewDidLoad()
+			view.backgroundColor = .systemBlue
 			createView()
+			locationManager.delegate = self
+			locationManager.requestWhenInUseAuthorization()
         // Do any additional setup after loading the view.
     }
 	
 	override func viewDidAppear(_ animated: Bool) {
 		super.viewDidAppear(animated)
-		determineLocationPermissions()
 	}
 
 }
