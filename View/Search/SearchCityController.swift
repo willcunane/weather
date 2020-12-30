@@ -58,8 +58,8 @@ public class SearchCityController: UIViewController {
 	
 	private let searchButton : UIButton = {
 		let button = UIButton()
-		button.backgroundColor = .systemBlue
-		button.tintColor = .white
+		button.backgroundColor = primaryColor
+		button.tintColor = textColor
 		button.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
 		button.setTitle("Search", for: .normal)
 		button.layer.cornerRadius = 10
@@ -74,7 +74,7 @@ public class SearchCityController: UIViewController {
 		} else {
 			let vc = CityController()
 			vc.searchLocation = searchBar.text!
-			//vc.modal
+			vc.modalPresentationStyle = .overFullScreen
 			self.present(vc, animated: true, completion: nil)
 		}
   }

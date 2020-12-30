@@ -37,7 +37,8 @@ public class CityController: UIViewController {
 	public override func viewDidLoad() {
 		super.viewDidLoad()
 		configureCollectionView()
-		view.backgroundColor = .systemBlue
+		view.backgroundColor = primaryColor
+		configureSwipeDirections()
 	}
 	
 	public override func viewDidAppear(_ animated: Bool) {
@@ -52,7 +53,26 @@ public class CityController: UIViewController {
 		self.collectionView.delegate = self
 		self.collectionView.register(Cell.self, forCellWithReuseIdentifier: Cell.identifier)
 		self.collectionView.alwaysBounceVertical = true
-		self.collectionView.backgroundColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
+		self.collectionView.backgroundColor = primaryColor
+	}
+	
+	// Inits swipe direction and action
+	func configureSwipeDirections() {
+		let swipeDown = UISwipeGestureRecognizer(target: self, action: #selector(respondToSwipeGesture))
+		swipeDown.direction = .up
+		self.view.addGestureRecognizer(swipeDown)
+	}
+	@objc func respondToSwipeGesture(gesture: UIGestureRecognizer) {
+		if let swipeGesture = gesture as? UISwipeGestureRecognizer {
+			switch swipeGesture.direction {
+			case UISwipeGestureRecognizer.Direction.up:
+				let vc = SearchCityController()
+				vc.modalPresentationStyle = .overFullScreen
+				self.present(vc, animated: true, completion: nil)
+			default:
+				break
+			}
+		}
 	}
 	
 	func getWeatherBySearch(Location : String){
@@ -100,7 +120,7 @@ public class CityController: UIViewController {
 	private let locationLabel : UILabel = {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 30, weight: .medium)
-		label.textColor = .white
+		label.textColor = textColor
 		label.textAlignment = .center
 		return label
 	}()
@@ -108,7 +128,7 @@ public class CityController: UIViewController {
 	private let summaryLabel : UILabel = {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 18, weight: .regular)
-		label.textColor = .white
+		label.textColor = textColor
 		label.textAlignment = .center
 		return label
 	}()
@@ -134,7 +154,7 @@ public class CityController: UIViewController {
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 50, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		return label
 	}()
 	
@@ -142,7 +162,7 @@ public class CityController: UIViewController {
 		let label = UILabel()
 		label.textAlignment = .left
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		label.numberOfLines = 2
 		return label
 	}()
@@ -151,7 +171,7 @@ public class CityController: UIViewController {
 		let label = UILabel()
 		label.textAlignment = .left
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		return label
 	}()
 	
@@ -159,14 +179,14 @@ public class CityController: UIViewController {
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		return label
 	}()
 	private let sunsetLabel : UILabel = {
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		return label
 	}()
 	
@@ -174,8 +194,8 @@ public class CityController: UIViewController {
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 20, weight: .regular)
-		label.textColor = .white
-		label.text = "Sunrise"
+		label.textColor = textColor
+		label.text = ""
 		return label
 	}()
 	
@@ -183,8 +203,8 @@ public class CityController: UIViewController {
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 20, weight: .regular)
-		label.textColor = .white
-		label.text = "Sunset"
+		label.textColor = textColor
+		label.text = ""
 		return label
 	}()
 	
@@ -216,11 +236,11 @@ public class CityController: UIViewController {
 			make.width.equalTo(200)
 			make.height.equalTo(30)
 			make.centerX.equalTo(view.snp.centerX)
-			make.bottom.equalTo(currentWeatherImage.snp.bottom)
+			make.bottom.equalTo(collectionView.snp.top).offset(-10)
 		}
 		currentWeatherImage.snp.makeConstraints { (make) in
-			make.width.equalTo(250)
-			make.height.equalTo(250)
+			make.width.equalTo(200)
+			make.height.equalTo(180)
 			make.top.equalTo(locationLabel.snp.bottom)
 			make.centerX.equalTo(view.snp.centerX)
 		}

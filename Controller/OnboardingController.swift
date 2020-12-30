@@ -21,7 +21,7 @@ class OnboardingController: UIViewController, CLLocationManagerDelegate {
 			presentWeatherController()
 		} else if locationManager.authorizationStatus == .authorizedWhenInUse {
 			presentWeatherController()
-		} else {
+		} else if locationManager.authorizationStatus == .denied {
 			createAlert(title: "Location Permissions Disabled", message: "You have disabled location permissions for this app. You will only be able to search for locations. To fix this please visit your devices privacy settings for this application", style: .alert)
 		}
 	}
@@ -47,7 +47,7 @@ class OnboardingController: UIViewController, CLLocationManagerDelegate {
 	private let label : UILabel = {
 		let label = UILabel()
 		label.text = "Please enable location services for this application in your settings.\n\n Settings \n Privacy \n Location Services \n Current Weather - Weather App \n Allow while using app"
-		label.textColor = .white
+		label.textColor = textColor
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 18, weight: .semibold)
 		label.numberOfLines = 20
@@ -59,8 +59,9 @@ class OnboardingController: UIViewController, CLLocationManagerDelegate {
 		button.setTitle("Search", for: .normal)
 		button.titleLabel?.font = .systemFont(ofSize: 22, weight: .regular)
 		button.titleLabel?.textAlignment = .center
-		button.backgroundColor = .white
-		button.titleLabel?.textColor = .systemBlue
+		button.backgroundColor = textColor
+		button.tintColor = primaryColor
+		button.titleLabel?.textColor = primaryColor
 		button.addTarget(self, action: #selector(searchTapped), for: .touchUpInside)
 		button.layer.cornerRadius = 10
 		return button
@@ -85,7 +86,7 @@ class OnboardingController: UIViewController, CLLocationManagerDelegate {
 	}
     override func viewDidLoad() {
 			super.viewDidLoad()
-			view.backgroundColor = .systemBlue
+			view.backgroundColor = primaryColor
 			createView()
 			locationManager.delegate = self
 			locationManager.requestWhenInUseAuthorization()

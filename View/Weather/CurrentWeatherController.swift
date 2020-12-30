@@ -42,7 +42,7 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		super.viewDidLoad()
 		configureCollectionView()
 		configureSwipeDirections()
-		view.backgroundColor = .systemBlue
+		view.backgroundColor = primaryColor
 	}
 	
 	public override func viewDidAppear(_ animated: Bool) {
@@ -57,7 +57,7 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		self.collectionView.delegate = self
 		self.collectionView.register(Cell.self, forCellWithReuseIdentifier: Cell.identifier)
 		self.collectionView.alwaysBounceVertical = true
-		self.collectionView.backgroundColor = #colorLiteral(red: 0.1764705926, green: 0.4980392158, blue: 0.7568627596, alpha: 1)
+		self.collectionView.backgroundColor = primaryColor
 	}
 	
 	// Inits swipe direction and action
@@ -209,7 +209,7 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 	private let locationLabel : UILabel = {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 30, weight: .medium)
-		label.textColor = .white
+		label.textColor = textColor
 		label.textAlignment = .center
 		return label
 	}()
@@ -217,13 +217,14 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 	private let summaryLabel : UILabel = {
 		let label = UILabel()
 		label.font = .systemFont(ofSize: 18, weight: .regular)
-		label.textColor = .white
+		label.textColor = textColor
 		label.textAlignment = .center
 		return label
 	}()
 	
 	private let currentWeatherImage : UIImageView = {
 		let imageView = UIImageView()
+		imageView.contentMode = .scaleAspectFit
 		return imageView
 	}()
 	
@@ -242,8 +243,8 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 	private let currentTemperatureLabel : UILabel = {
 		let label = UILabel()
 		label.textAlignment = .center
-		label.font = .systemFont(ofSize: 50, weight: .bold)
-		label.textColor = .white
+		label.font = .systemFont(ofSize: 56, weight: .bold)
+		label.textColor = textColor
 		return label
 	}()
 	
@@ -251,7 +252,7 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		let label = UILabel()
 		label.textAlignment = .left
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		label.numberOfLines = 2
 		return label
 	}()
@@ -260,7 +261,7 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		let label = UILabel()
 		label.textAlignment = .left
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		return label
 	}()
 	
@@ -268,14 +269,14 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		return label
 	}()
 	private let sunsetLabel : UILabel = {
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 22, weight: .bold)
-		label.textColor = .white
+		label.textColor = textColor
 		return label
 	}()
 	
@@ -283,8 +284,8 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 20, weight: .regular)
-		label.textColor = .white
-		label.text = "Sunrise"
+		label.textColor = textColor
+		label.text = ""
 		return label
 	}()
 	
@@ -292,15 +293,15 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		let label = UILabel()
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 20, weight: .regular)
-		label.textColor = .white
-		label.text = "Sunset"
+		label.textColor = textColor
+		label.text = ""
 		return label
 	}()
 	
 	private let upArrow : UIImageView = {
 		let imageView = UIImageView()
 		imageView.image = UIImage(systemName: "hand.point.up.left")
-		imageView.tintColor = .white
+		imageView.tintColor = textColor
 		return imageView
 	}()
 	
@@ -309,7 +310,7 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 		label.text = "Swipe up to search for a city"
 		label.textAlignment = .center
 		label.font = .systemFont(ofSize: 14, weight: .regular)
-		label.textColor = .white
+		label.textColor = textColor
 		label.numberOfLines = 2
 		
 		return label
@@ -345,11 +346,11 @@ public class CurrentWeatherController: UIViewController, CLLocationManagerDelega
 			make.width.equalTo(200)
 			make.height.equalTo(30)
 			make.centerX.equalTo(view.snp.centerX)
-			make.bottom.equalTo(currentWeatherImage.snp.bottom)
+			make.bottom.equalTo(collectionView.snp.top).offset(-10)
 		}
 		currentWeatherImage.snp.makeConstraints { (make) in
-			make.width.equalTo(250)
-			make.height.equalTo(250)
+			make.width.equalTo(200)
+			make.height.equalTo(180)
 			make.top.equalTo(locationLabel.snp.bottom)
 			make.centerX.equalTo(view.snp.centerX)
 		}
