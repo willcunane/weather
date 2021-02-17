@@ -15,8 +15,10 @@ let snowArray : [Int] = [13,14,15,16]
 let sunnyArray : [Int] = [31,32,33,34]
 let stormArray : [Int] = [41,42,43,44,45,46,47]
 
-public let primaryColor = #colorLiteral(red: 0.1580473483, green: 0.2007086277, blue: 0.2236498892, alpha: 1)
-public let textColor = #colorLiteral(red: 0.9762479663, green: 0.7134186625, blue: 0.1913919449, alpha: 1)
+public var primaryColor = #colorLiteral(red: 0.3490196078, green: 0.8705882353, blue: 0.9960784314, alpha: 1)
+public var secondaryColor = #colorLiteral(red: 0.921431005, green: 0.9214526415, blue: 0.9214410186, alpha: 1)
+public var textColor = #colorLiteral(red: 0.1764705882, green: 0.1725490196, blue: 0.3568627451, alpha: 1)
+public var cellBackgroundColor = #colorLiteral(red: 0.9999960065, green: 1, blue: 1, alpha: 1)
 
 public extension UIViewController{
     func showLoading() {
@@ -77,23 +79,27 @@ public extension UIViewController{
 		let code = Int(weatherCode ?? 26)
 		// could this be a switch statement?
 		if rainArray.contains(code){
+			// Call function to change each one or not
 			imageView.contentMode = .scaleAspectFit
-			imageView.image = #imageLiteral(resourceName: "rain")
+			imageView.image = #imageLiteral(resourceName: "rain-1")
 		} else if cloudyArray.contains(code){
 			imageView.contentMode = .scaleAspectFit
-			imageView.image = #imageLiteral(resourceName: "cloudy")
+			imageView.image = #imageLiteral(resourceName: "overcast")
 		} else if snowArray.contains(code){
 			imageView.contentMode = .scaleAspectFit
-			imageView.image = #imageLiteral(resourceName: "snow")
+			imageView.image = #imageLiteral(resourceName: "snow-1")
 		} else if sunnyArray.contains(code){
+//			textColor = #colorLiteral(red: 0.1772164404, green: 0.172498405, blue: 0.3624495864, alpha: 1)
+//			primaryColor = #colorLiteral(red: 0.9796106219, green: 0.8836253881, blue: 0.4678134918, alpha: 1)
+//			secondaryColor = #colorLiteral(red: 0.9999960065, green: 1, blue: 1, alpha: 1)
 			imageView.contentMode = .scaleAspectFit
-			imageView.image = #imageLiteral(resourceName: "sunny")
+			imageView.image = #imageLiteral(resourceName: "day_clear")
 		} else if stormArray.contains(code){
 			imageView.contentMode = .scaleAspectFit
-			imageView.image = #imageLiteral(resourceName: "storm")
+			imageView.image = #imageLiteral(resourceName: "rain_thunder")
 		} else {
 			imageView.contentMode = .scaleAspectFit
-			imageView.image = #imageLiteral(resourceName: "cloudy")
+			imageView.image = #imageLiteral(resourceName: "overcast")
 		}
 	}
 }

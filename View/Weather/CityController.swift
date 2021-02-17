@@ -20,18 +20,27 @@ public class CityController: UIViewController {
 	public override func loadView() {
 		super.loadView()
 		
-		let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+		let layout = UICollectionViewFlowLayout()
+		layout.sectionInset = UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+		layout.scrollDirection = .horizontal
+		layout.itemSize = CGSize(width: 150, height: 250)
+		
+		
+		let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+		collectionView.alwaysBounceHorizontal = true
+		collectionView.bounces = false
+		collectionView.showsHorizontalScrollIndicator = false
+		collectionView.contentInset = UIEdgeInsets(top: -10, left: 0, bottom:0, right: 0)
+		
 		self.view.addSubview(collectionView)
 		
 		collectionView.snp.makeConstraints { (make) in
-			make.top.equalTo(view.snp.top).offset(400)
-			make.bottom.equalTo(view.snp.bottom).offset(-160)
-			make.trailing.equalTo(view.snp.trailing).offset(5)
-			make.leading.equalTo(view.snp.leading).offset(-5)
+			make.top.equalTo(view.snp.top).offset(530)
+			make.bottom.equalTo(view.snp.bottomMargin).offset(-20)
+			make.trailing.equalTo(view.snp.trailing)
+			make.leading.equalTo(view.snp.leading)
 		}
 		self.collectionView = collectionView
-		collectionView.layer.borderWidth = 1
-		collectionView.layer.borderColor = UIColor.white.cgColor
 	}
 	
 	public override func viewDidLoad() {
@@ -109,25 +118,34 @@ public class CityController: UIViewController {
 		locationLabel.text = location
 		summaryLabel.text = summary
 		currentTemperatureLabel.text = "\(Int(temperature!))°"
-		windSpeedLabel.text = "Wind Speed: \(Int(wind!)) mph"
-		humidityLabel.text = "Humidity: \(Int(humidity!))%"
+		windSpeedLabel.text = "\(Int(wind!)) mph"
+		humidityLabel.text = "\(Int(humidity!))%"
 		sunriseLabel.text = "\(sunrise!)"
 		sunsetLabel.text = "\(sunset!)"
 		removeLoading()
 	}
 	
 	// MARK: - UI Elements
+	private let locationImage : UIImageView = {
+		let imageView = UIImageView()
+		imageView.contentMode = .scaleAspectFit
+		imageView.image = #imageLiteral(resourceName: "newLocation")
+		imageView.image?.withRenderingMode(.alwaysTemplate)
+		imageView.tintColor = UIColor.white
+		return imageView
+	}()
+	
 	private let locationLabel : UILabel = {
 		let label = UILabel()
-		label.font = .systemFont(ofSize: 30, weight: .medium)
+		label.font = .systemFont(ofSize: 30, weight: .semibold)
 		label.textColor = textColor
-		label.textAlignment = .center
+		label.textAlignment = .left
 		return label
 	}()
 	
 	private let summaryLabel : UILabel = {
 		let label = UILabel()
-		label.font = .systemFont(ofSize: 18, weight: .regular)
+		label.font = .systemFont(ofSize: 18, weight: .semibold)
 		label.textColor = textColor
 		label.textAlignment = .center
 		return label
@@ -135,33 +153,47 @@ public class CityController: UIViewController {
 	
 	private let currentWeatherImage : UIImageView = {
 		let imageView = UIImageView()
+		imageView.contentMode = .scaleAspectFit
 		return imageView
 	}()
 	
 	private let sunriseIconImage : UIImageView = {
 		let imageView = UIImageView()
-		imageView.image = #imageLiteral(resourceName: "sunrise_icon")
+		imageView.image = #imageLiteral(resourceName: "newSunset")
+		imageView.tintColor = secondaryColor
 		return imageView
 	}()
 	
 	private let sunsetIconImage : UIImageView = {
 		let imageView = UIImageView()
-		imageView.image = #imageLiteral(resourceName: "sunset_icon")
+		imageView.image = #imageLiteral(resourceName: "newSunrise")
 		return imageView
 	}()
 	
 	private let currentTemperatureLabel : UILabel = {
 		let label = UILabel()
 		label.textAlignment = .center
-		label.font = .systemFont(ofSize: 50, weight: .bold)
+		label.font = .systemFont(ofSize: 56, weight: .bold)
 		label.textColor = textColor
 		return label
 	}()
 	
+	private let humidityIcon : UIImageView = {
+		let imageView = UIImageView()
+		imageView.image = #imageLiteral(resourceName: "newHumidity")
+		return imageView
+	}()
+	
+	private let windSpeedIcon : UIImageView = {
+		let imageView = UIImageView()
+		imageView.image = #imageLiteral(resourceName: "newWindSPeed")
+		return imageView
+	}()
+	
 	private let windSpeedLabel : UILabel = {
 		let label = UILabel()
-		label.textAlignment = .left
-		label.font = .systemFont(ofSize: 22, weight: .bold)
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 16, weight: .semibold)
 		label.textColor = textColor
 		label.numberOfLines = 2
 		return label
@@ -169,8 +201,8 @@ public class CityController: UIViewController {
 	
 	private let humidityLabel : UILabel = {
 		let label = UILabel()
-		label.textAlignment = .left
-		label.font = .systemFont(ofSize: 22, weight: .bold)
+		label.textAlignment = .center
+		label.font = .systemFont(ofSize: 16, weight: .semibold)
 		label.textColor = textColor
 		return label
 	}()
@@ -178,47 +210,30 @@ public class CityController: UIViewController {
 	private let sunriseLabel : UILabel = {
 		let label = UILabel()
 		label.textAlignment = .center
-		label.font = .systemFont(ofSize: 22, weight: .bold)
+		label.font = .systemFont(ofSize: 16, weight: .semibold)
 		label.textColor = textColor
 		return label
 	}()
 	private let sunsetLabel : UILabel = {
 		let label = UILabel()
 		label.textAlignment = .center
-		label.font = .systemFont(ofSize: 22, weight: .bold)
+		label.font = .systemFont(ofSize: 16, weight: .semibold)
 		label.textColor = textColor
-		return label
-	}()
-	
-	private let sunriseHeader : UILabel = {
-		let label = UILabel()
-		label.textAlignment = .center
-		label.font = .systemFont(ofSize: 20, weight: .regular)
-		label.textColor = textColor
-		label.text = ""
-		return label
-	}()
-	
-	private let sunsetHeader : UILabel = {
-		let label = UILabel()
-		label.textAlignment = .center
-		label.font = .systemFont(ofSize: 20, weight: .regular)
-		label.textColor = textColor
-		label.text = ""
 		return label
 	}()
 	
 	// MARK: - Constraints
 	func configureViewComponents() {
+		view.addSubview(locationImage)
 		view.addSubview(currentWeatherImage)
 		view.addSubview(currentTemperatureLabel)
+		view.addSubview(humidityIcon)
+		view.addSubview(windSpeedIcon)
 		view.addSubview(windSpeedLabel)
 		view.addSubview(humidityLabel)
 		view.addSubview(locationLabel)
 		view.addSubview(summaryLabel)
 		view.addSubview(sunriseLabel)
-		view.addSubview(sunriseHeader)
-		view.addSubview(sunsetHeader)
 		view.addSubview(sunsetLabel)
 		view.addSubview(sunriseIconImage)
 		view.addSubview(sunsetIconImage)
@@ -226,68 +241,93 @@ public class CityController: UIViewController {
 	
 	// Create constraints for the view
 	func configureViewLayout() {
+		locationImage.snp.makeConstraints { (make) in
+			make.width.equalTo(30)
+			make.height.equalTo(30)
+			make.centerY.equalTo(locationLabel.snp.centerY)
+			make.trailing.equalTo(locationLabel.snp.leading).offset(-20)
+		}
 		locationLabel.snp.makeConstraints { (make) in
 			make.width.equalTo(300)
 			make.height.equalTo(40)
 			make.top.equalTo(50)
-			make.centerX.equalTo(view.snp.centerX)
+			make.leading.equalTo(view.snp.leading).offset(80)
 		}
 		summaryLabel.snp.makeConstraints { (make) in
 			make.width.equalTo(200)
 			make.height.equalTo(30)
 			make.centerX.equalTo(view.snp.centerX)
-			make.bottom.equalTo(collectionView.snp.top).offset(-10)
+			make.top.equalTo(currentWeatherImage.snp.bottom).offset(20)
 		}
 		currentWeatherImage.snp.makeConstraints { (make) in
 			make.width.equalTo(200)
 			make.height.equalTo(180)
-			make.top.equalTo(locationLabel.snp.bottom)
+			make.top.equalTo(locationLabel.snp.bottom).offset(30)
 			make.centerX.equalTo(view.snp.centerX)
 		}
 		currentTemperatureLabel.snp.makeConstraints { (make) in
 			make.width.equalTo(120)
 			make.height.equalTo(50)
-			make.top.equalTo(currentWeatherImage.snp.bottom)
+			make.top.equalTo(summaryLabel.snp.bottom).offset(5)
 			make.centerX.equalTo(view.snp.centerX)
 		}
-		sunriseHeader.snp.makeConstraints { (make) in
-			make.width.equalTo(80)
-			make.height.equalTo(20)
-			make.leading.equalTo(view.snp.leading).offset(20)
-			make.bottom.equalTo(view.snp.bottomMargin).offset(-10)
-		}
-		sunsetHeader.snp.makeConstraints { (make) in
-			make.width.equalTo(80)
-			make.height.equalTo(20)
-			make.trailing.equalTo(view.snp.trailing).offset(-20)
-			make.bottom.equalTo(view.snp.bottomMargin).offset(-10)
+		sunriseIconImage.snp.makeConstraints { (make) in
+			make.width.equalTo(40)
+			make.height.equalTo(40)
+			make.top.equalTo(currentTemperatureLabel.snp.bottom).offset(50)
+			make.centerX.equalTo(sunriseLabel.snp.centerX)
 		}
 		sunriseLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(100)
+			make.width.equalTo(80)
 			make.height.equalTo(30)
-			make.bottom.equalTo(sunriseHeader.snp.top)
-			make.centerX.equalTo(sunriseHeader.snp.centerX)
+			make.top.equalTo(sunriseIconImage.snp.bottom)
+			make.leading.equalTo(view.snp.leading).offset(10)
 		}
-		sunsetLabel.snp.makeConstraints { (make) in
-			make.width.equalTo(100)
+		humidityIcon.snp.makeConstraints { (make) in
+			make.width.equalTo(40)
+			make.height.equalTo(40)
+			make.top.equalTo(sunriseIconImage.snp.top)
+			make.centerX.equalTo(humidityLabel.snp.centerX)
+		}
+		humidityLabel.snp.makeConstraints { (make) in
+			make.width.equalTo(80)
 			make.height.equalTo(30)
-			make.bottom.equalTo(sunsetHeader.snp.top)
-			make.centerX.equalTo(sunsetHeader.snp.centerX)
+			make.top.equalTo(humidityIcon.snp.bottom)
+			make.leading.equalTo(sunriseLabel.snp.trailing).offset(30)
 		}
-		sunsetIconImage.snp.makeConstraints { (make) in
-			make.width.equalTo(50)
-			make.height.equalTo(50)
-			make.bottom.equalTo(sunsetLabel.snp.top)
-			make.centerX.equalTo(sunsetLabel.snp.centerX)
+		windSpeedIcon.snp.makeConstraints { (make) in
+			make.width.equalTo(40)
+			make.height.equalTo(40)
+			make.top.equalTo(sunriseIconImage.snp.top)
+			make.centerX.equalTo(windSpeedLabel.snp.centerX)
+		}
+		windSpeedLabel.snp.makeConstraints { (make) in
+			make.width.equalTo(80)
+			make.height.equalTo(30)
+			make.top.equalTo(windSpeedIcon.snp.bottom)
+			make.trailing.equalTo(sunsetLabel.snp.leading).offset(-30)
 		}
 		sunriseIconImage.snp.makeConstraints { (make) in
-			make.width.equalTo(50)
-			make.height.equalTo(50)
-			make.bottom.equalTo(sunriseLabel.snp.top)
+			make.width.equalTo(40)
+			make.height.equalTo(40)
+			make.top.equalTo(currentTemperatureLabel.snp.bottom).offset(70)
 			make.centerX.equalTo(sunriseLabel.snp.centerX)
+		}
+		sunsetIconImage.snp.makeConstraints { (make) in
+			make.width.equalTo(40)
+			make.height.equalTo(40)
+			make.top.equalTo(sunriseIconImage.snp.top)
+			make.centerX.equalTo(sunsetLabel.snp.centerX)
+		}
+		sunsetLabel.snp.makeConstraints { (make) in
+			make.width.equalTo(80)
+			make.height.equalTo(30)
+			make.top.equalTo(sunsetIconImage.snp.bottom)
+			make.trailing.equalTo(view.snp.trailing).offset(-10)
 		}
 	}
 }
+
 
 extension CityController: UICollectionViewDataSource {
 	
@@ -321,6 +361,10 @@ extension CityController: UICollectionViewDataSource {
 		cell.textLabel.text = day
 		cell.tempLabel.text = "\(Int(data.high))° | \(Int(data.low))°"
 		updateIconImage(weatherCode: Double(data.code), imageView: cell.weatherIcon)
+		
+		cell.backgroundColor = cellBackgroundColor.withAlphaComponent(0.3)
+		cell.layer.cornerRadius = 10
+		
 		return cell
 	}
 }
@@ -332,29 +376,3 @@ extension CityController: UICollectionViewDelegate {
 	}
 }
 
-extension CityController: UICollectionViewDelegateFlowLayout {
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											sizeForItemAt indexPath: IndexPath) -> CGSize {
-		return CGSize(width: collectionView.bounds.width, height: 70)
-	}
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											insetForSectionAt section: Int) -> UIEdgeInsets {
-		return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0) //.zero
-	}
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-		return 0
-	}
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-		return 0
-	}
-}

@@ -58,8 +58,8 @@ public class SearchCityController: UIViewController {
 	
 	private let searchButton : UIButton = {
 		let button = UIButton()
-		button.backgroundColor = primaryColor
-		button.tintColor = textColor
+		button.backgroundColor = textColor
+		button.tintColor = primaryColor
 		button.addTarget(self, action: #selector(searchButtonTapped), for: .touchUpInside)
 		button.setTitle("Search", for: .normal)
 		button.layer.cornerRadius = 10

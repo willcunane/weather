@@ -42,6 +42,9 @@ extension CurrentWeatherController: UICollectionViewDataSource {
 		cell.textLabel.text = day
 		cell.tempLabel.text = "\(Int(data.high))° | \(Int(data.low))°"
 		updateIconImage(weatherCode: Double(data.code), imageView: cell.weatherIcon)
+		
+		cell.backgroundColor = cellBackgroundColor.withAlphaComponent(0.3)
+		cell.layer.cornerRadius = 10
 		return cell
 	}
 }
@@ -50,33 +53,6 @@ extension CurrentWeatherController: UICollectionViewDelegate {
 	
 	public func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 		
-	}
-}
-
-extension CurrentWeatherController: UICollectionViewDelegateFlowLayout {
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											sizeForItemAt indexPath: IndexPath) -> CGSize {
-		return CGSize(width: collectionView.bounds.width, height: 70)
-	}
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											insetForSectionAt section: Int) -> UIEdgeInsets {
-		return UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0) //.zero
-	}
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
-		return 0
-	}
-	
-	public func collectionView(_ collectionView: UICollectionView,
-											layout collectionViewLayout: UICollectionViewLayout,
-											minimumLineSpacingForSectionAt section: Int) -> CGFloat {
-		return 0
 	}
 }
 
@@ -92,35 +68,37 @@ class Cell: UICollectionViewCell {
 		super.init(frame: frame)
 
 		let textLabel = UILabel(frame: .zero)
-		textLabel.textColor = .white
+		textLabel.textColor = textColor
 		self.contentView.addSubview(textLabel)
 		
 		let tempLabel = UILabel(frame: .zero)
-		tempLabel.textColor = .white
+		tempLabel.textColor = textColor
 		self.contentView.addSubview(tempLabel)
 		
 		let weatherIcon = UIImageView(frame: .zero)
 		self.contentView.addSubview(weatherIcon)
 		
 		textLabel.snp.makeConstraints { (make) in
-			make.leading.equalTo(20)
-			make.centerY.equalTo(self.snp.centerY)
+			make.centerX.equalTo(contentView.snp.centerX)
+			make.bottom.equalTo(weatherIcon.snp.topMargin).offset(-30)
 			make.width.equalTo(110)
 		}
 		tempLabel.snp.makeConstraints { (make) in
-			make.trailing.equalTo(-20)
-			make.centerY.equalTo(self.snp.centerY)
-			make.width.equalTo(80)
+			make.centerX.equalTo(contentView.snp.centerX)
+			make.top.equalTo(weatherIcon.snp.bottomMargin).offset(30)
+			make.width.equalTo(150)
 		}
 		weatherIcon.snp.makeConstraints { (make) in
-			make.width.equalTo(50)
-			make.height.equalTo(50)
-			make.centerY.equalTo(self.snp.centerY)
+			make.width.equalTo(80)
+			make.height.equalTo(80)
+			make.centerY.equalTo(contentView.snp.centerY)
 			make.centerX.equalTo(self.snp.centerX)
 		}
+		
 		self.textLabel = textLabel
 		self.tempLabel = tempLabel
 		self.weatherIcon = weatherIcon
+		
 		self.reset()
 	}
 	
@@ -134,10 +112,10 @@ class Cell: UICollectionViewCell {
 	}
 	
 	func reset() {
-		self.textLabel.textAlignment = .left
-		self.tempLabel.textAlignment = .left
+		self.textLabel.textAlignment = .center
+		self.tempLabel.textAlignment = .center
 		
-		self.textLabel.font = .systemFont(ofSize: 18, weight: .regular)
-		self.tempLabel.font = .systemFont(ofSize: 18, weight: .bold)
+		self.textLabel.font = .systemFont(ofSize: 22, weight: .semibold)
+		self.tempLabel.font = .systemFont(ofSize: 22, weight: .bold)
 	}
 }
